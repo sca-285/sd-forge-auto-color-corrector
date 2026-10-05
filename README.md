@@ -1,4 +1,4 @@
-# Auto Color Corrector
+# Stable Diffusion Forge: Auto Color Corrector
 
 Fixes what is off in every generated image, and nothing else: colour casts,
 milky blacks, a frame that is too dark or too bright, flat or harsh contrast,
