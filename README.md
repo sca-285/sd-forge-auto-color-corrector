@@ -11,14 +11,22 @@ picture's own histogram and colours.
 
 ## Where it fits
 
-It is the first of three, and runs first:
+Three extensions split the work the way a photo is made, and run in this
+order:
 
-| Auto Color Corrector | Optical Realism | Digital Mastering |
+| 1. [Auto Color Corrector](https://github.com/sca-285/sd-forge-auto-color-corrector) | 2. [Optical Realism](https://github.com/sca-285/sd-forge-optical-realism) | 3. [Digital Mastering](https://github.com/sca-285/sd-webui-digital-mastering) |
 |---|---|---|
-| Correction: a neutral, well-exposed picture | The camera: lens, light, depth of field, film | The grade: the look |
+| **Correction**, automatic: measures the image and fixes only what is off (colour cast, black and white points, exposure, flat or harsh contrast, dull colour), or matches a reference picture | **The camera**: lens geometry, vignette, depth of field, blur, bloom, flare, halation, light wrap, flash, haze, grain, dust, scratches, date stamp, highlight roll-off | **The grade**, by hand or by preset: exposure, contrast, white balance, saturation, vibrance, split toning, CDL, LUT, selective colour, clarity, sharpen, overlays, anti-banding, JPEG repair |
+
+No two of them do the same job. Auto Color Corrector and Digital Mastering
+both touch exposure and white balance, but for opposite ends: the corrector
+brings a faulty picture back to neutral by itself and leaves a sound one
+alone; Digital Mastering moves a picture away from neutral, on purpose, by
+the amount you set. Correct first, then shoot, then grade.
 
 A grade laid on a picture with a green cast or crushed blacks carries the
-fault along; correcting first gives the other two a clean start.
+fault along; correcting first gives the other two a clean start. Nothing
+here is a look: for looks, use the presets of the other two.
 
 ## What Auto does
 
