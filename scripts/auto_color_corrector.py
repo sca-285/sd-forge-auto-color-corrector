@@ -5,7 +5,7 @@ import sys
 import traceback
 
 import gradio as gr
-from modules import devices, scripts
+from modules import devices, script_callbacks, scripts
 from modules.ui_components import InputAccordion
 
 EXTENSION_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,9 +14,10 @@ if EXTENSION_ROOT not in sys.path:
 
 from lib_acc.auto import correct  # noqa: E402
 from lib_acc.controls import (  # noqa: E402
-    BY_NAME, INFOTEXT_KEY, NAMES, REPORT_KEY, from_infotext, settings, to_infotext,
+    BY_NAME, INFOTEXT_KEY, NAMES, REPORT_KEY, coerce, from_infotext, settings, to_infotext,
 )
 from lib_acc.reference import reference_html  # noqa: E402
+from lib_acc import xyz  # noqa: E402
 
 GUIDE = ("*Fixes what is off and nothing else: colour casts, milky blacks, too dark or too bright, flat or "
          "harsh, dull colour. Each fix measures the image first and is skipped when there is nothing to "
@@ -29,6 +30,27 @@ SECTIONS = [
     ("Colour strength", ["en_saturation", "saturation"]),
     ("Intent", ["protect_intent"]),
 ]
+
+
+XYZ_ATTR = "_acc_xyz"
+
+
+def _register_xyz():
+    xyz.register("ACC", XYZ_ATTR, [
+        ("Overall strength", float, "strength", None),
+        ("Keep mood", float, "keep_mood", None),
+        ("Fix colour cast", str, "en_wb", xyz.bools),
+        ("Fix black & white points", str, "en_levels", xyz.bools),
+        ("Fix exposure", str, "en_exposure", xyz.bools),
+        ("Fix contrast", str, "en_contrast", xyz.bools),
+        ("Fix colour strength", str, "en_saturation", xyz.bools),
+        ("Respect low-key / high-key", str, "protect_intent", xyz.bools),
+    ])
+
+
+# Once the scripts are loaded, before the UI is built: the X/Y/Z plot reads its
+# axis list when it builds its own panel.
+script_callbacks.on_before_ui(_register_xyz)
 
 
 class Script(scripts.Script):
@@ -87,9 +109,12 @@ class Script(scripts.Script):
     # After the composite, so an "only masked" inpaint is corrected as a whole
     # image instead of leaving a seam at the crop edge.
     def postprocess_image_after_composite(self, p, pp, enabled, reference, *values):
-        if not enabled or pp.image is None:
+        axis = xyz.overrides(p, XYZ_ATTR)
+        if not (enabled or axis) or pp.image is None:
             return
         s = settings(dict(zip(NAMES, values)))
+        if axis:
+            s = xyz.merged(s, axis, coerce, BY_NAME)
         try:
             result, plan = correct(pp.image, s, reference=reference, device=devices.device)
         except Exception as exc:
