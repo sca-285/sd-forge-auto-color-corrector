@@ -58,6 +58,13 @@ The console prints a line per image, and PNG info carries it:
 
     Auto Color Corrector found: cast: warm 0.10, green 0.24 -> corrected · levels: 0.00..0.96 -> 0..1
 
+## X/Y/Z plot
+
+Axes for the X/Y/Z plot script, under `[ACC]`: Overall strength, Keep mood,
+and on/off for each fix (colour cast, black & white points, exposure,
+contrast, colour strength, low-key / high-key guard). A cell that sets any of
+them switches the corrector on for that cell.
+
 ## PNG info
 
 `Auto Color Corrector` holds the settings that differ from the defaults
@@ -71,6 +78,7 @@ scripts/auto_color_corrector.py   UI + host hook
 lib_acc/auto.py                   measuring, guards and the plan of corrections
 lib_acc/ops.py                    the colour maths, pure torch
 lib_acc/controls.py               every control, declared once (UI, PNG info)
+lib_acc/xyz.py                    X/Y/Z plot axes
 lib_acc/reference.py              the folded before / after picture
 reference.jpg                     the before / after picture
 style.css                         reference box
