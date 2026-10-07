@@ -124,8 +124,10 @@ style.css                         reference box, preset carousel
 - Sample photos in `reference.jpg`, from scikit-image's sample data:
   Eileen Collins by NASA (public domain), coffee cup by Rachel Michetti (CC0),
   Falcon 9 launch by SpaceX (public domain).
-- Preset icons (`preset_icons/`) are set in Bebas Neue (SIL Open Font License 1.1); only the
-  rendered pictures are shipped, not the font.
+- Preset icons (`preset_icons/`): photos from the Open Images dataset, by Flickr
+  photographers under CC BY 2.0 (each author and source listed in
+  `preset_icons/CREDITS.md`), cropped, with the preset applied and lettering in
+  Bebas Neue (SIL Open Font License 1.1; only the rendered pictures are shipped).
 
 Thanks also to **Claude**, for help building this
 extension.
