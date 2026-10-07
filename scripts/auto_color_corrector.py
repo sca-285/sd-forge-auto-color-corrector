@@ -19,15 +19,17 @@ from lib_acc.controls import (  # noqa: E402
 from lib_acc.reference import reference_html  # noqa: E402
 from lib_acc import xyz  # noqa: E402
 
-GUIDE = ("*Fixes what is off and nothing else: colour casts, milky blacks, too dark or too bright, flat or "
-         "harsh, dull colour. Each fix measures the image first and is skipped when there is nothing to "
+GUIDE = ("*Fixes what is off and nothing else: JPEG blocking, noise, colour casts, milky blacks, too dark or "
+         "too bright, flat or harsh, dull colour, and (if ticked) a tilted horizon. Each fix measures the image first and is skipped when there is nothing to "
          "fix. Runs before Optical Realism and Digital Mastering, so they start from a clean picture. "
          "The console and PNG info say what was found.*")
 
 SECTIONS = [
+    ("Repair", ["en_jpeg", "jpeg", "en_denoise", "denoise"]),
     ("Colour cast", ["en_wb", "wb", "keep_mood"]),
     ("Tone", ["en_levels", "levels", "en_exposure", "exposure", "en_contrast", "contrast"]),
     ("Colour strength", ["en_saturation", "saturation"]),
+    ("Horizon", ["en_horizon"]),
     ("Intent", ["protect_intent"]),
 ]
 
@@ -44,6 +46,9 @@ def _register_xyz():
         ("Fix exposure", str, "en_exposure", xyz.bools),
         ("Fix contrast", str, "en_contrast", xyz.bools),
         ("Fix colour strength", str, "en_saturation", xyz.bools),
+        ("Fix JPEG blocking", str, "en_jpeg", xyz.bools),
+        ("Fix noise", str, "en_denoise", xyz.bools),
+        ("Level the horizon", str, "en_horizon", xyz.bools),
         ("Respect low-key / high-key", str, "protect_intent", xyz.bools),
     ])
 

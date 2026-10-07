@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 import torch
 import torch.nn.functional as F
 
-from . import ops
+from . import ops, repair
 
 ANALYSIS_SIZE = 512
 
@@ -36,11 +36,16 @@ class Plan:
     pivot: float = 0.5
     vibrance: float = 0.0
     reference: tuple = None       # (ref_mean, ref_std) in Lab
+    deblock: float = 0.0
+    dering: float = 0.0
+    denoise: float = 0.0
+    rotate: float = 0.0           # degrees
     notes: list = field(default_factory=list)
 
     def changes(self):
         return (any(abs(g - 1.0) > 1e-6 for g in self.gains) or self.black > 0.0 or self.white < 1.0
-                or bool(self.stops) or bool(self.contrast) or bool(self.vibrance) or self.reference is not None)
+                or bool(self.stops) or bool(self.contrast) or bool(self.vibrance) or self.reference is not None
+                or self.deblock > 0 or self.denoise > 0 or bool(self.rotate))
 
     def report(self):
         return " · ".join(self.notes) if self.notes else "nothing to correct"
@@ -172,6 +177,23 @@ def _describe_cast(gains):
 def plan(x, s, reference=None):
     """Decide the corrections for x (1, 3, H, W) under settings s."""
     p = Plan()
+
+    # 0. Repairs, measured on the full-size picture: resizing hides the JPEG
+    # grid and averages noise away.
+    if s["en_jpeg"] and s["jpeg"] > 0:
+        b = repair.blockiness(x)
+        amount = min(1.0, max(0.0, (b - 1.12) / 0.5)) * s["jpeg"]
+        if amount >= 0.05:
+            # Ringing softens detail when cleaned, so it gets the lighter hand.
+            p.deblock, p.dering = amount, amount * 0.5
+            p.notes.append(f"JPEG blocking {b:.2f} -> repaired {amount:.0%}")
+    if s["en_denoise"] and s["denoise"] > 0:
+        sigma = repair.noise_sigma(x)
+        amount = min(1.0, max(0.0, (sigma - 0.008) / 0.025)) * s["denoise"]
+        if amount >= 0.05:
+            p.denoise = amount
+            p.notes.append(f"noise {sigma * 255:.1f}/255 -> reduced {amount:.0%}")
+
     small = _small(x)
     mono = is_monochrome(small)
     key = tonal_key(small) if s["protect_intent"] else "normal"
@@ -276,7 +298,16 @@ def plan(x, s, reference=None):
             p.vibrance = amount
             p.notes.append(f"colour: level {level:.2f}, vibrance {amount:+.2f}")
 
-    # 6. Reference
+    # 6. Horizon (off by default: it turns and crops the frame)
+    if s["en_horizon"]:
+        angle, confidence = repair.tilt(small)
+        if confidence >= 4.0 and 0.4 <= abs(angle) <= 8.0:
+            p.rotate = angle
+            p.notes.append(f"horizon: {angle:+.1f} deg, levelled")
+        elif abs(angle) >= 0.4 and confidence > 0:
+            p.notes.append(f"horizon: maybe {angle:+.1f} deg, not sure enough, kept")
+
+    # 7. Reference
     if reference is not None and s["ref_strength"] > 0:
         p.reference = lab_stats(reference)
         p.notes.append(f"reference: matched {s['ref_strength']:.0%}")
@@ -284,7 +315,15 @@ def plan(x, s, reference=None):
 
 
 def apply(x, p, ref_strength=0.0):
-    """Carry out a plan on the full-size image."""
+    """Carry out a plan's pixel corrections on the full-size image. The
+    horizon turn is not here: it changes the geometry, so it is done after
+    Overall strength has blended corrected and original."""
+    if p.deblock > 0:
+        x = repair.deblock(x, p.deblock)
+    if p.dering > 0:
+        x = repair.dering(x, p.dering)
+    if p.denoise > 0:
+        x = repair.denoise(x, p.denoise)
     if any(abs(g - 1.0) > 1e-6 for g in p.gains):
         x = ops.white_balance(x, x.new_tensor(p.gains))
     if p.black > 0.0 or p.white < 1.0:
@@ -330,6 +369,8 @@ def correct(image, s, reference=None, device="cpu"):
     out = apply(x, p, s["ref_strength"] if ref is not None else 0.0)
     if s["strength"] < 1.0:
         out = torch.lerp(x, out, s["strength"])
+    if p.rotate:
+        out = repair.rotate(out, p.rotate)
     result = to_image(out)
     if alpha is not None:
         result.putalpha(alpha)

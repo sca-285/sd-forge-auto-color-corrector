@@ -34,6 +34,13 @@ CONTROLS = [
     C("contrast", "Contrast", 0.6, info="Lifts a flat picture, calms a harsh one."),
     C("en_saturation", "Fix colour strength", True, kind="checkbox"),
     C("saturation", "Colour strength", 0.8, info="Vibrance on dull pictures; skin and strong colours are spared."),
+    C("en_jpeg", "Fix JPEG blocking", True, kind="checkbox"),
+    C("jpeg", "JPEG repair", 1.0, info="Measures the 8x8 block grid and smooths it and the ringing round edges."),
+    C("en_denoise", "Fix noise", True, kind="checkbox"),
+    C("denoise", "Noise reduction", 0.8, info="Measures the noise; colour noise is smoothed hard, grain-like "
+      "luminance noise gently and away from edges."),
+    C("en_horizon", "Level the horizon", False, kind="checkbox",
+      info="Finds a tilt from long straight lines and turns the picture level (it crops a little). Off by default."),
     C("protect_intent", "Respect low-key / high-key pictures", True, kind="checkbox",
       info="A night scene with lights stays dark, a bright snow scene stays bright."),
     C("ref_strength", "Reference strength", 0.5,
