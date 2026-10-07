@@ -5,8 +5,9 @@ chips filter, arrows scroll, and a card writes "name|nonce" into a hidden
 textbox, whose change event applies the preset on the Python side. The nonce
 makes picking the same preset again (after Reset or a manual edit) count.
 
-Icons come from preset_icons.jpg, one sprite, indexed by preset_icons.json;
-a preset without an icon gets a lettered tile instead.
+Icons are plain <img> files in preset_icons/, listed in preset_icons/index.json,
+one per preset: an <img> shows under every UI theme, where a CSS background
+sprite can be overridden. A preset without an icon gets a lettered tile.
 """
 
 import html
@@ -15,20 +16,19 @@ import os
 
 from .reference import _url
 
-SPRITE = "preset_icons.jpg"
-SIZE = 72                     # icon size on screen, CSS px (the sprite is 2x)
+ICON_DIR = "preset_icons"
+SIZE = 72                     # icon size on screen, CSS px (the files are 2x)
 
 
-def _sprite(root):
-    path = os.path.join(root, SPRITE)
+def _icons(root):
+    folder = os.path.join(root, ICON_DIR)
     try:
-        with open(os.path.splitext(path)[0] + ".json", encoding="utf-8") as fh:
+        with open(os.path.join(folder, "index.json"), encoding="utf-8") as fh:
             index = json.load(fh)
     except (OSError, ValueError):
-        return None, {}
-    if not os.path.isfile(path):
-        return None, {}
-    return _url(path), index
+        return {}
+    return {name: _url(os.path.join(folder, f)) for name, f in index.items()
+            if os.path.isfile(os.path.join(folder, f))}
 
 
 def parse_pick(value):
@@ -39,9 +39,7 @@ def parse_pick(value):
 
 def carousel_html(root, prefix, tab, names, categories, descriptions, display=lambda n: n):
     p = prefix
-    url, index = _sprite(root)
-    icons = index.get("icons", {})
-    cols, rows = index.get("cols", 1), index.get("rows", 1)
+    icons = _icons(root)
     esc = lambda s: html.escape(str(s), quote=True)  # noqa: E731
 
     cats = list(dict.fromkeys(categories.get(n, "") for n in names))
@@ -51,11 +49,9 @@ def carousel_html(root, prefix, tab, names, categories, descriptions, display=la
     cards = []
     for n in names:
         label = display(n)
-        if url and n in icons:
-            i = icons[n]
-            style = (f"background-image:url('{esc(url)}');background-size:{cols * SIZE}px {rows * SIZE}px;"
-                     f"background-position:-{(i % cols) * SIZE}px -{(i // cols) * SIZE}px")
-            icon = f'<span class="{p}-icon" style="{style}"></span>'
+        if n in icons:
+            icon = (f'<img class="{p}-icon" src="{esc(icons[n])}" width="{SIZE}" height="{SIZE}" '
+                    f'alt="" loading="lazy" draggable="false">')
         else:
             letters = "".join(w[0] for w in label.split()[:2]).upper() or "?"
             icon = f'<span class="{p}-icon {p}-letters">{esc(letters)}</span>'
