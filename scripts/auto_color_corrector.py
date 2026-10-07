@@ -21,10 +21,8 @@ from lib_acc.presets import CATEGORIES, DESCRIPTIONS, NOT_IN_PRESETS, PRESETS  #
 from lib_acc.reference import reference_html  # noqa: E402
 from lib_acc import xyz  # noqa: E402
 
-GUIDE = ("*Fixes what is off and nothing else: JPEG blocking, noise, colour casts, milky blacks, too dark or "
-         "too bright, flat or harsh, dull colour, and (if ticked) a tilted horizon. Each fix measures the image first and is skipped when there is nothing to "
-         "fix. Runs before Optical Realism and Digital Mastering, so they start from a clean picture. "
-         "The console and PNG info say what was found.*")
+GUIDE = ("*Fixes only what is wrong (JPEG blocks, noise, colour cast, exposure, contrast, dull colour) "
+         "and leaves a good picture alone. Runs before Optical Realism and Digital Mastering.*")
 
 SECTIONS = [
     ("Repair", ["en_jpeg", "jpeg", "en_denoise", "denoise"]),
