@@ -59,6 +59,25 @@ balance; Digital Mastering's HSL (orange, red) adjusts skin by hand.
 Each step has an on/off box and a strength slider; **Overall strength**
 (default 0.8) blends the whole correction with the original.
 
+## Presets
+
+Presets here set how much Auto may do, never a look. Pick one from the
+carousel at the top of the panel; Reset goes back to the stock settings.
+
+| Preset | Does |
+|---|---|
+| Standard | The stock settings: every fix on, measured, at 80 %. Horizon off |
+| Gentle | Half-strength nudges: fixes what is clearly wrong, barely touches the rest |
+| Full Fix | Everything at full strength, horizon levelling included |
+| Keep the Mood | Keeps most of a colour cast and the contrast you chose; only the faults go |
+| Repair Only | JPEG blocking and noise, nothing else |
+| Colour Only | Colour cast and colour strength only |
+| Tone Only | Black & white points, exposure and contrast only |
+| Old Photo Scan | For faded scans and old phone pictures: every fix at full, no low-key / high-key protection |
+
+A preset never touches the reference picture or its strength. The X/Y/Z plot
+has a `[ACC] Preset` axis too.
+
 ## What it found
 
 The console prints a line per image, and PNG info carries it:
@@ -67,7 +86,7 @@ The console prints a line per image, and PNG info carries it:
 
 ## X/Y/Z plot
 
-Axes for the X/Y/Z plot script, under `[ACC]`: Overall strength, Keep mood,
+Axes for the X/Y/Z plot script, under `[ACC]`: Preset, Overall strength, Keep mood,
 and on/off for each fix (colour cast, black & white points, exposure,
 contrast, colour strength, JPEG blocking, noise, horizon, low-key / high-key
 guard). A cell that sets any of
@@ -88,9 +107,13 @@ lib_acc/ops.py                    the colour maths, pure torch
 lib_acc/repair.py                 JPEG blocking, noise and horizon: measuring and fixing
 lib_acc/controls.py               every control, declared once (UI, PNG info)
 lib_acc/xyz.py                    X/Y/Z plot axes
+lib_acc/presets.py                the eight presets
+lib_acc/carousel.py               the preset carousel (HTML)
+javascript/acc_carousel.js        the preset carousel (clicks, filter, scroll)
+preset_icons.jpg/.json            the preset icons, one sprite
 lib_acc/reference.py              the folded before / after picture
 reference.jpg                     the before / after picture
-style.css                         reference box
+style.css                         reference box, preset carousel
 ```
 
 ## Credits
@@ -101,6 +124,8 @@ style.css                         reference box
 - Sample photos in `reference.jpg`, from scikit-image's sample data:
   Eileen Collins by NASA (public domain), coffee cup by Rachel Michetti (CC0),
   Falcon 9 launch by SpaceX (public domain).
+- Preset icons (`preset_icons.jpg`) use the same sample photos and are set in Bebas Neue, Playfair Display and Space Grotesk
+  (SIL Open Font License 1.1); only the rendered picture is shipped, not the fonts.
 
 Thanks also to **Claude**, for help building this
 extension.

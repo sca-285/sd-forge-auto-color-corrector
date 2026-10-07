@@ -13,9 +13,11 @@ if EXTENSION_ROOT not in sys.path:
     sys.path.insert(0, EXTENSION_ROOT)
 
 from lib_acc.auto import correct  # noqa: E402
+from lib_acc.carousel import carousel_html, parse_pick  # noqa: E402
 from lib_acc.controls import (  # noqa: E402
     BY_NAME, INFOTEXT_KEY, NAMES, REPORT_KEY, coerce, from_infotext, settings, to_infotext,
 )
+from lib_acc.presets import CATEGORIES, DESCRIPTIONS, NOT_IN_PRESETS, PRESETS  # noqa: E402
 from lib_acc.reference import reference_html  # noqa: E402
 from lib_acc import xyz  # noqa: E402
 
@@ -39,6 +41,7 @@ XYZ_ATTR = "_acc_xyz"
 
 def _register_xyz():
     xyz.register("ACC", XYZ_ATTR, [
+        ("Preset", str, "preset", lambda: list(PRESETS)),
         ("Overall strength", float, "strength", None),
         ("Keep mood", float, "keep_mood", None),
         ("Fix colour cast", str, "en_wb", xyz.bools),
@@ -87,6 +90,14 @@ class Script(scripts.Script):
         # defaults stay bound to the right control.
         with InputAccordion(False, label="Auto Color Corrector", elem_id=f"acc_enabled_{tab}") as enabled:
             gr.Markdown(GUIDE)
+            gr.HTML(carousel_html(EXTENSION_ROOT, "acc", tab, list(PRESETS), CATEGORIES, DESCRIPTIONS),
+                    elem_id=f"acc_preset_car_{tab}")
+            pick = gr.Textbox(value="", show_label=False, container=False, elem_id=f"acc_preset_pick_{tab}",
+                              elem_classes=["acc-pick"])
+            with gr.Row(equal_height=True):
+                about = gr.Markdown("*Pick how much Auto may do, or Reset for the stock settings.*",
+                                    elem_id=f"acc_preset_about_{tab}")
+                reset = gr.Button("Reset", scale=0, min_width=100, elem_id=f"acc_reset_{tab}")
             gr.HTML(reference_html(EXTENSION_ROOT, "acc-ref", "Auto Color Corrector before and after"),
                     elem_id=f"acc_ref_{tab}")
             add("strength")
@@ -99,6 +110,21 @@ class Script(scripts.Script):
                                      elem_id=f"acc_reference_{tab}")
                 add("ref_strength")
 
+        outputs = [comps[n] for n in NAMES]
+
+        def apply_preset(value):
+            name = parse_pick(value)
+            s = PRESETS.get(name)
+            if not s:
+                return [gr.update() for _ in range(len(NAMES) + 1)]
+            return ([gr.update(value=f"**{name}** · *{DESCRIPTIONS.get(name, '')}*")]
+                    + [gr.update() if n in NOT_IN_PRESETS else gr.update(value=s[n]) for n in NAMES])
+
+        pick.change(apply_preset, [pick], [about] + outputs)
+        reset.click(lambda: [gr.update(value=""), gr.update(value="*Stock settings.*")]
+                    + [gr.update() if n in NOT_IN_PRESETS else gr.update(value=v) for n, v in settings().items()],
+                    [], [pick, about] + outputs)
+
         def field(name):
             def get(params):
                 s = from_infotext(params.get(INFOTEXT_KEY, ""))
@@ -109,7 +135,7 @@ class Script(scripts.Script):
         self.infotext_fields += [(comps[n], field(n)) for n in NAMES]
         self.paste_field_names = [INFOTEXT_KEY]
 
-        return [enabled, reference, *[comps[n] for n in NAMES]]
+        return [enabled, reference, *outputs]
 
     # After the composite, so an "only masked" inpaint is corrected as a whole
     # image instead of leaving a seam at the crop edge.
@@ -119,7 +145,7 @@ class Script(scripts.Script):
             return
         s = settings(dict(zip(NAMES, values)))
         if axis:
-            s = xyz.merged(s, axis, coerce, BY_NAME)
+            s = xyz.merged(s, axis, coerce, BY_NAME, presets=PRESETS, not_in_presets=NOT_IN_PRESETS)
         try:
             result, plan = correct(pp.image, s, reference=reference, device=devices.device)
         except Exception as exc:
