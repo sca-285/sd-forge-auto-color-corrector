@@ -91,8 +91,8 @@
     padding: 0 !important;
     margin: 0 !important;
     flex: none !important;
-    width: 28px !important;
-    height: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
     border-radius: 50% !important;
     border: 1px solid var(--border-color-primary, rgba(128, 128, 128, 0.35)) !important;
     background: var(--button-secondary-background-fill, transparent) !important;
@@ -106,7 +106,7 @@
     flex: 1 !important;
     min-width: 0 !important;
     display: flex !important;
-    gap: 8px !important;
+    gap: 10px !important;
     overflow-x: auto !important;
     scroll-snap-type: x proximity;
     scrollbar-width: thin;
@@ -116,7 +116,7 @@
     box-sizing: border-box !important;
     margin: 0 !important;
     flex: none !important;
-    width: 84px !important;
+    width: 116px !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -138,13 +138,13 @@
 .acc-icon {
     display: block !important;
     flex: none;
-    width: 72px !important;
-    height: 72px !important;
+    width: 100px !important;
+    height: 100px !important;
     max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
-    border-radius: 10px;
+    border-radius: 12px;
     object-fit: cover;
     background-color: #18191c;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
@@ -155,14 +155,14 @@
     align-items: center;
     justify-content: center;
     color: #f5f3ee;
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 700;
     letter-spacing: 0.5px;
 }
 .acc-name {
     width: 100% !important;
-    font-size: 11px !important;
-    line-height: 13px !important;
+    font-size: 12px !important;
+    line-height: 15px !important;
     text-align: center !important;
     display: -webkit-box !important;
     -webkit-line-clamp: 2 !important;
@@ -171,3 +171,4 @@
 }
 /* The textbox the carousel writes to: in the page, never on screen. */
 .acc-pick { display: none !important; }
+

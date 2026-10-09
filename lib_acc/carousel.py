@@ -17,7 +17,7 @@ import os
 from .reference import _url
 
 ICON_DIR = "preset_icons"
-SIZE = 72                     # icon size on screen, CSS px (the files are 2x)
+SIZE = 100                    # icon size on screen, CSS px (the files are 2x)
 
 
 def _icons(root):
