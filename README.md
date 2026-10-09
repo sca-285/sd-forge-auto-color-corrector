@@ -35,10 +35,10 @@ here is a look: for looks, use the presets of the other two.
 | JPEG blocking | How much stronger the steps across the 8x8 JPEG grid are than inside the blocks (about 1.0 when clean, 1.3 at quality 50, 1.7+ at quality 20), on the full-size picture | De-blocking along the grid and de-ringing round edges, as strong as the blocking measured (moved here from Digital Mastering) |
 | Noise | The noise level (Immerkaer's method) over the flatter half of the picture, so texture is not taken for noise | Colour noise smoothed hard, luminance noise gently and only away from edges |
 | Colour cast | The colour of the bright near-neutral pixels (a white shirt, a cup, clouds), on both axes: warm/cool and green/magenta | White balance in linear light, by the size of the cast. Warm and cool light within an everyday range is kept as natural light; green and magenta casts get almost no allowance |
-| Black & white points | Milky blacks, dull whites (0.5 % and 99.5 % percentiles) | Levels, capped so nothing clips |
+| Black & white points | Clearly milky blacks or dull whites (0.5 % and 99.5 % percentiles) | Levels, part of the way, so pictures keep their own range |
 | Exposure | A median brightness outside the normal band, or clipped whites | Exposure in linear light, with a shoulder so black stays black and white stays white; brought to the edge of the band, not to one "correct" grey |
 | Contrast | A flat or harsh histogram (its middle half) | A gentle S-curve around the picture's own middle grey |
-| Colour strength | Dull or overcooked colour | Vibrance: weak colours move most, skin and strong colours least |
+| Colour strength | Nearly colourless or overcooked colour (muted colour is left alone: it is usually a choice) | A modest vibrance: weak colours move most, skin and strong colours least |
 | Reference (optional) | Your reference picture | Its colour and spread (mean and deviation in Lab), at Reference strength |
 | Horizon (off by default) | The tilt of the long straight edges near horizontal and vertical (horizons, buildings, door frames), from the structure tensor, with a confidence | Turns the picture level and scales it just enough to hide the corners; only when confident (streets, buildings), never for pictures without straight lines. Done after Overall strength, so the turned and the original picture never mix |
 
@@ -61,19 +61,21 @@ Each step has an on/off box and a strength slider; **Overall strength**
 
 ## Presets
 
-Presets here set how much Auto may do, never a look. Pick one from the
-carousel at the top of the panel; Reset goes back to the stock settings.
+A ticked fix is permission, not an order: Auto measures first and skips a fix
+when there is nothing to fix, so a sound picture looks the same under every
+preset. The presets differ in which fixes they allow. Pick one from the
+carousel; Reset goes back to the stock settings.
 
-| Preset | Does |
+| Preset | Allows |
 |---|---|
-| Standard | The stock settings: every fix on, measured, at 80 %. Horizon off |
-| Gentle | Half-strength nudges: fixes what is clearly wrong, barely touches the rest |
+| Standard | Every fix, each only as far as it measures a fault. Horizon off |
+| Natural | Faults only: blocking, noise, colour cast, exposure. Contrast and colour left as generated |
+| Gentle | Everything at half strength |
 | Full Fix | Everything at full strength, horizon levelling included |
-| Keep the Mood | Keeps most of a colour cast and the contrast you chose; only the faults go |
-| Repair Only | JPEG blocking and noise, nothing else |
-| Colour Only | Colour cast and colour strength only |
-| Tone Only | Black & white points, exposure and contrast only |
-| Old Photo Scan | For faded scans and old phone pictures: every fix at full, no low-key / high-key protection |
+| Keep the Mood | For a deliberately warm, cool or dark picture: keeps its cast, contrast and colour |
+| Repair Only | JPEG blocking and noise |
+| Tone Only | Black & white points, exposure and contrast |
+| Old Photo Scan | Every fix at full, no low-key / high-key protection |
 
 A preset never touches the reference picture or its strength. The X/Y/Z plot
 has a `[ACC] Preset` axis too.

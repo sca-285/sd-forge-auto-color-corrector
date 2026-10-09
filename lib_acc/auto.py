@@ -234,8 +234,10 @@ def plan(x, s, reference=None):
     if s["en_levels"] and s["levels"] > 0 and key != "low" and not flat:
         y = ops.luma(cur)
         lo, hi = _q(y, 0.005), _q(y, 0.995)
-        black = min(lo, 0.12) if lo > 0.03 else 0.0
-        white = max(hi, 0.60) if hi < 0.95 else 1.0
+        # Only clearly milky blacks or dull whites, and only part of the way:
+        # a full stretch to 0..1 makes every picture punchy and alike.
+        black = min(lo, 0.12) * 0.7 if lo > 0.05 else 0.0
+        white = 1.0 - (1.0 - max(hi, 0.60)) * 0.7 if hi < 0.88 else 1.0
         if key == "high":
             black = 0.0
         black *= s["levels"]
@@ -289,8 +291,10 @@ def plan(x, s, reference=None):
         c = ops.chroma(cur)[(y > 0.08) & (y < 0.95)]
         level = float(c.mean()) if c.numel() else 0.0
         amount = 0.0
-        if level < 0.20:
-            amount = min(0.8, (0.24 - level) * 7.0)
+        # Muted colour is usually a choice: only nearly colourless pictures
+        # get a lift, and a modest one.
+        if level < 0.10:
+            amount = min(0.35, (0.13 - level) * 4.0)
         elif level > 0.55:
             amount = -min(0.3, (level - 0.50) * 2.0)
         amount *= s["saturation"]
