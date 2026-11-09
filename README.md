@@ -167,6 +167,16 @@ The console prints a line per image, and PNG info carries it:
 
     Auto Color Corrector found: cast: warm 0.10, green 0.24 -> corrected · levels: 0.00..0.96 -> 0..1
 
+## VRAM
+
+Before it touches the GPU, the extension checks how much VRAM is
+really free. If Forge has filled it with the checkpoint (large models, low-VRAM
+mode), Forge is asked to unload models first, as it does itself before the VAE;
+if there is still not enough room, the step runs on the CPU. On Windows this
+avoids the driver spilling into system RAM, where post-processing slows to a
+crawl and seems stuck at 99-100 %. The console says where each step ran and how
+long it took.
+
 ## X/Y/Z plot
 
 Axes for the X/Y/Z plot script, under `[ACC]`: Preset, Overall strength, Keep mood,
@@ -189,6 +199,7 @@ lib_acc/auto.py                   measuring, guards and the plan of corrections
 lib_acc/ops.py                    the colour maths, pure torch
 lib_acc/repair.py                 JPEG blocking, noise and horizon: measuring and fixing
 lib_acc/controls.py               every control, declared once (UI, PNG info)
+lib_acc/gpu.py                    GPU or CPU: checks free VRAM, asks Forge to make room
 lib_acc/xyz.py                    X/Y/Z plot axes
 lib_acc/presets.py                the eight presets
 lib_acc/carousel.py               the preset carousel (HTML)

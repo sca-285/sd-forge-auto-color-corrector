@@ -19,7 +19,7 @@ from lib_acc.controls import (  # noqa: E402
 )
 from lib_acc.presets import CATEGORIES, DESCRIPTIONS, NOT_IN_PRESETS, PRESETS  # noqa: E402
 from lib_acc.reference import reference_html  # noqa: E402
-from lib_acc import xyz  # noqa: E402
+from lib_acc import gpu, xyz  # noqa: E402
 
 GUIDE = ("*Fixes only what is wrong (JPEG blocks, noise, colour cast, exposure, contrast, dull colour) "
          "and leaves a good picture alone. Runs before Optical Realism and Digital Mastering.*")
@@ -145,7 +145,11 @@ class Script(scripts.Script):
         if axis:
             s = xyz.merged(s, axis, coerce, BY_NAME, presets=PRESETS, not_in_presets=NOT_IN_PRESETS)
         try:
-            result, plan = correct(pp.image, s, reference=reference, device=devices.device)
+            # Full-size work (blocking, noise, horizon): about 32 float copies of
+            # the picture. On the GPU only if it has room, else on the CPU.
+            device = gpu.pick(devices.device, gpu.image_need(pp.image, 32), "Auto Color Corrector")
+            with gpu.Timer("Auto Color Corrector", device):
+                result, plan = correct(pp.image, s, reference=reference, device=device)
         except Exception as exc:
             traceback.print_exc()
             print(f"[Auto Color Corrector] Error, image left untouched: {exc}")
@@ -154,3 +158,8 @@ class Script(scripts.Script):
         pp.image = result
         p.extra_generation_params[INFOTEXT_KEY] = to_infotext(s)
         p.extra_generation_params[REPORT_KEY] = plan.report()
+
+    def postprocess(self, p, processed, *args):
+        # Hand the VRAM PyTorch cached for the correction back, so the next
+        # generation's model gets all of it.
+        devices.torch_gc()
